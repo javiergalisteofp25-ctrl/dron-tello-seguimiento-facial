@@ -1,0 +1,51 @@
+import time
+from djitellopy import Tello
+
+dron = Tello()
+
+try:
+    dron.connect()
+    bateria = dron.get_battery()
+    print(f"Batería actual: {bateria}%")
+
+    if bateria >= 50:
+        print("Batería suficiente. Iniciando rutina avanzada...")
+
+        # 1. Despegue
+        dron.takeoff()
+        time.sleep(1)
+
+        # 2. Subir 50 cm de altura extra
+        print("Subiendo 50 cm...")
+        dron.move_up(50)
+
+        # 3. Avanzar 100 cm (1 metro)
+        print("Avanzando 100 cm...")
+        dron.move_forward(100)
+
+        # 4. Girar 90 grados a la derecha
+        print("Girando 90° a la derecha...")
+        dron.rotate_clockwise(90)
+
+        # 5. Hacer una voltereta hacia adelante
+        print("¡Haciendo voltereta hacia adelante!")
+        dron.flip_forward()
+        time.sleep(2)  # Pausa de estabilización tras el flip
+
+        # 6. Retroceder 50 cm
+        print("Retrocediendo 50 cm...")
+        dron.move_back(50)
+
+        # 7. Aterrizaje
+        print("Aterrizando...")
+        dron.land()
+
+    else:
+        print("Batería insuficiente para maniobras avanzadas.")
+
+except Exception as e:
+    print(f"Error durante el vuelo: {e}")
+
+finally:
+    dron.end()
+    print("Conexión cerrada.")

@@ -1,0 +1,59 @@
+import cv2
+import time
+from djitellopy import Tello
+
+dron = Tello()
+
+# Función auxiliar para mantener la ventana de video actualizada durante las pausas
+def mantener_video(frame_read, duracion_segundos):
+    tiempo_inicio = time.time()
+    while time.time() - tiempo_inicio < duracion_segundos:
+        frame = frame_read.frame
+        # Corrección correcta de color: RGB a BGR para OpenCV
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        frame = cv2.resize(frame, (720, 480))
+        
+        cv2.imshow("Camara Tello en Vuelo", frame)
+        # cv2.waitKey DEBE estar DENTRO del bucle while
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+try:
+    dron.connect()
+    print(f"Batería: {dron.get_battery()}%")
+
+    # Iniciar transmisión
+    dron.streamon()
+    frame_read = dron.get_frame_read()
+
+    # Esperar a que la cámara entregue el primer fotograma válido
+    time.sleep(2)
+
+    if dron.get_battery() >= 50:
+        print("Despegando con cámara activa...")
+        dron.takeoff()
+        
+        # Muestra el video durante los primeros 10 segundos tras despegar
+        print("Manteniendo posición durante 10 segundos...")
+        mantener_video(frame_read, 10)
+
+        # Realizar una voltereta hacia adelante
+        print("¡Haciendo voltereta hacia adelante!")
+        dron.flip_forward()
+        
+        # Mantener video durante los 2 segundos de estabilización
+        mantener_video(frame_read, 2)
+       
+        print("Aterrizando...")
+        dron.land()
+    else:
+        print("Batería insuficiente (< 50%).")
+
+except Exception as e:
+    print(f"Error: {e}")
+
+finally:
+    dron.streamoff()
+    cv2.destroyAllWindows()
+    dron.end()
+    print("Conexión finalizada.")

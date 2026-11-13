@@ -1,0 +1,40 @@
+import time
+from djitellopy import Tello
+
+# Crear la instancia del dron
+dron = Tello()
+
+try:
+    print("Conectando con el Tello...")
+    dron.connect()
+
+    bateria = dron.get_battery()
+    print(f"Nivel de batería: {bateria}%")
+
+    # Comprobación de seguridad de la batería
+    if bateria >= 50:
+        print("Conexión correcta y batería suficiente. Iniciando secuencia de vuelo...")
+        
+        # 1. Despegue (el dron despega y se estabiliza a aprox. 80-100 cm)
+        print("Despegando...")
+        dron.takeoff()
+
+        # 2. Espera de 10 segundos en vuelo estacionario
+        print("Manteniendo posición durante 10 segundos...")
+        time.sleep(10)
+
+        # 3. Aterrizaje
+        print("Aterrizando...")
+        dron.land()
+        print("Aterrizaje completado.")
+
+    else:
+        print("Batería insuficiente (< 50%). Carga la batería antes de volar.")
+
+except Exception as e:
+    print(f"Ocurrió un error durante la ejecución: {e}")
+
+finally:
+    # Cerrar la comunicación de forma segura siempre
+    dron.end()
+    print("Comunicación finalizada.")
